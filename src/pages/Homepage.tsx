@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import "../styles/HomePage.scss"
+import "../styles/Homepage.scss"
 
 const HomePage: React.FC = () => {
   return (
