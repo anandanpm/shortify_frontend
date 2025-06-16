@@ -1,5 +1,6 @@
 
-import axios, { type AxiosError } from "axios"
+import  { type AxiosError } from "axios"
+import axiosInstance from "./axiosInstance"
 
 // Define interfaces for your API responses
 interface User {
@@ -27,10 +28,10 @@ interface ErrorResponse {
   message: string
 }
 
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true,
-})
+// const axiosInstance = axios.create({
+//   baseURL: import.meta.env.VITE_API_BASE_URL,
+//   withCredentials: true,
+// })
 
 const api = {
   register: async (name: string, email: string, password: string): Promise<User> => {
