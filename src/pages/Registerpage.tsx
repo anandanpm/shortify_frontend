@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux"
 import { Formik, Form, Field, ErrorMessage } from "formik"
 import * as Yup from "yup"
 import { useUserState } from "../hooks/useAppSelector"
-import { setLoading, setError, clearError, loginSuccess } from "../redux/slices/userSlice"
+import { setLoading, setError, clearError } from "../redux/slices/userSlice"
 import authAPI from "../services/api.tsx"
 import "../styles/AuthPages.scss"
 
@@ -53,8 +53,8 @@ const Register: React.FC = () => {
 
       console.log("Registration successful, user:", user)
 
-      // Auto-login the user after successful registration
-      dispatch(loginSuccess(user))
+  
+  
 
       // Navigate to dashboard or home page instead of login
       navigate("/login")
