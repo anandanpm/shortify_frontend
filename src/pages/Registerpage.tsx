@@ -57,7 +57,7 @@ const Register: React.FC = () => {
       dispatch(loginSuccess(user))
 
       // Navigate to dashboard or home page instead of login
-      navigate("/dashboard")
+      navigate("/login")
     } catch (error: any) {
       console.log("Registration error caught:", error.message)
       dispatch(setError(error.message || "Registration failed. Please try again."))
