@@ -130,16 +130,29 @@ const userSlice = createSlice({
         if (!state) return { ...initialState, loading: true }
         state.loading = true
         state.error = null
+        console.log("Register pending - setting loading to true")
       })
-      .addCase(registerUser.fulfilled, (state) => {
-        if (!state) return initialState
+      .addCase(registerUser.fulfilled, (state, action) => {
+        if (!state) return {
+          ...initialState,
+          user: action.payload,
+          isAuthenticated: true,
+          isInitialized: true,
+        }
+        // This was the missing part - you need to set the user data!
+        state.user = action.payload
+        state.isAuthenticated = true
         state.loading = false
         state.error = null
+        state.isInitialized = true
+        console.log("Register fulfilled - user registered and logged in:", action.payload)
       })
       .addCase(registerUser.rejected, (state, action) => {
         if (!state) return { ...initialState, error: action.payload as string }
         state.loading = false
         state.error = action.payload as string
+        state.isAuthenticated = false
+        state.user = null
         console.log("Register rejected with error:", action.payload)
       })
 
