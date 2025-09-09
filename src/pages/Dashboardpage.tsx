@@ -1,4 +1,3 @@
-
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
@@ -22,49 +21,28 @@ const UrlSchema = Yup.object().shape({
     .required("Please enter a URL"),
 })
 
+// ✅ Yup schema for search form
+const SearchSchema = Yup.object().shape({
+  searchQuery: Yup.string()
+    .max(200, "Search query is too long")
+    .optional(),
+})
+
 interface UrlFormValues {
   originalUrl: string
 }
 
+
 const Dashboard: React.FC = () => {
   const dispatch = useDispatch()
-  const { user } = useUserState() // Assuming this returns user data
+  useUserState()
   const { urls, loading, error, totalUrls, shorteningInProgress } = useUrlsState()
   const [successMessage, setSuccessMessage] = useState<string>("")
+  const [searchQuery, setSearchQuery] = useState<string>("") // ✅ controlled by Formik too
 
   useEffect(() => {
     fetchUrls()
   }, [])
-
-  // Prevent back button navigation when user is authenticated
-  useEffect(() => {
-    if (user) {
-      // Add a dummy history entry to prevent going back
-      window.history.pushState(null, '', window.location.href)
-      
-      const handlePopState = (_event: PopStateEvent) => {
-        // Push the current state again to prevent navigation
-        window.history.pushState(null, '', window.location.href)
-        
-        // Optional: Show a message to user
-        setSuccessMessage("Please use the logout button to exit the dashboard")
-        setTimeout(() => setSuccessMessage(""), 3000)
-      }
-
-      // Listen for back button events
-      window.addEventListener('popstate', handlePopState)
-
-      // Cleanup event listener
-      return () => {
-        window.removeEventListener('popstate', handlePopState)
-      }
-    }
-  }, [user])
-
-  useEffect(() => {
-    if (user) {
-    }
-  }, [user])
 
   const fetchUrls = async () => {
     try {
@@ -134,11 +112,17 @@ const Dashboard: React.FC = () => {
     setTimeout(() => setSuccessMessage(""), 2000)
   }
 
-  // Function to handle direct navigation to shortened URL
   const handleOpenShortUrl = (shortUrl: string) => {
-    // This will directly navigate to the backend endpoint which will redirect
     window.open(shortUrl, "_blank")
   }
+
+  // ✅ filter URLs based on Formik search query
+  const filteredUrls = urls.filter(
+    (url) =>
+      url.shortCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      url.shortUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      url.originalUrl.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="dashboard">
@@ -159,6 +143,39 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* ✅ Search Form with Formik */}
+        <div className="search-section">
+          <Formik
+            initialValues={{ searchQuery: "" }}
+            validationSchema={SearchSchema}
+            onSubmit={(values) => {
+              setSearchQuery(values.searchQuery)
+            }}
+          >
+            {({ handleSubmit }) => (
+              <Form onSubmit={handleSubmit} className="search-form">
+                <div className="form-group">
+                  <Field
+                    type="text"
+                    name="searchQuery"
+                    placeholder="Search URLs..."
+                    className="search-input"
+                  />
+                  <ErrorMessage name="searchQuery" component="div" className="error-text" />
+                </div>
+                <button type="submit" className="btn btn-small">🔍 Search</button>
+                <button
+                  type="button"
+                  className="btn btn-small btn-clear"
+                  onClick={() => setSearchQuery("")}
+                >
+                  ❌ Clear
+                </button>
+              </Form>
+            )}
+          </Formik>
+        </div>
+
         {/* URL Shortening Form */}
         <div className="url-form-section">
           <div className="card">
@@ -168,9 +185,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="card-content">
               <Formik
-                initialValues={{
-                  originalUrl: "",
-                }}
+                initialValues={{ originalUrl: "" }}
                 validationSchema={UrlSchema}
                 onSubmit={handleShortenUrl}
               >
@@ -210,7 +225,7 @@ const Dashboard: React.FC = () => {
         <div className="urls-section">
           <div className="card">
             <div className="card-header">
-              <h2>Your Shortened URLs ({totalUrls})</h2>
+              <h2>Your Shortened URLs ({filteredUrls.length})</h2>
               <p>Manage and track all your shortened URLs</p>
             </div>
             <div className="card-content">
@@ -219,15 +234,15 @@ const Dashboard: React.FC = () => {
                   <div className="spinner"></div>
                   <span>Loading your URLs...</span>
                 </div>
-              ) : urls.length === 0 ? (
+              ) : filteredUrls.length === 0 ? (
                 <div className="empty-state">
-                  <div className="empty-icon">🔗</div>
-                  <h3>No URLs yet</h3>
-                  <p>Start by shortening your first URL above!</p>
+                  <div className="empty-icon">🔍</div>
+                  <h3>No matching URLs</h3>
+                  <p>Try a different search query.</p>
                 </div>
               ) : (
                 <div className="urls-list">
-                  {urls.map((url, index) => (
+                  {filteredUrls.map((url, index) => (
                     <div key={url.id} className="url-item">
                       <div className="url-info">
                         <div className="url-meta">
@@ -240,32 +255,22 @@ const Dashboard: React.FC = () => {
                             <strong>Short URL:</strong>
                             <div className="url-actions">
                               <code className="short-url">{url.shortUrl}</code>
-                              <button
-                                onClick={() => copyToClipboard(url.shortUrl)}
-                                className="btn btn-small"
-                                title="Copy to clipboard"
-                              >
-                                📋
-                              </button>
-                              <button
-                                onClick={() => handleOpenShortUrl(url.shortUrl)}
-                                className="btn btn-small"
-                                title="Open in new tab"
-                              >
-                                🔗
-                              </button>
+                              <button onClick={() => copyToClipboard(url.shortUrl)} className="btn btn-small">📋</button>
+                              <button onClick={() => handleOpenShortUrl(url.shortUrl)} className="btn btn-small">🔗</button>
                             </div>
                           </div>
 
                           <div className="url-row">
                             <strong>Original URL:</strong>
                             <span className="original-url" title={url.originalUrl}>
-                              {url.originalUrl.length > 60 ? `${url.originalUrl.substring(0, 60)}...` : url.originalUrl}
+                              {url.originalUrl.length > 60
+                                ? `${url.originalUrl.substring(0, 60)}...`
+                                : url.originalUrl}
                             </span>
                           </div>
                         </div>
                       </div>
-                      {index < urls.length - 1 && <div className="url-separator"></div>}
+                      {index < filteredUrls.length - 1 && <div className="url-separator"></div>}
                     </div>
                   ))}
                 </div>

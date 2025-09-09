@@ -6,11 +6,13 @@ import "../styles/Layout.scss"
 
 const AppLayout: React.FC = () => {
   return (
-    <div className="app-layout">
+    <div>
+     <div className="app-layout">
       <Header />
       <main className="main-content">
         <Outlet />
       </main>
+     </div>
     </div>
   )
 }
