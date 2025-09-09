@@ -22,7 +22,7 @@ const selectUserState = createSelector([(state: RootState) => state.user], (user
 
   const result = {
     user: userSlice.user || null,
-    isAuthenticated: Boolean(userSlice.isAuthenticated && userSlice.user?.id),
+    isAuthenticated: Boolean(userSlice.isAuthenticated),
     loading: Boolean(userSlice.loading),
     error: userSlice.error || null,
   }
