@@ -61,7 +61,7 @@ const selectAuthStatus = createSelector([(state: RootState) => state.user], (use
   }
 
   return {
-    isAuthenticated: Boolean(userSlice.isAuthenticated && userSlice.user?.id),
+    isAuthenticated: Boolean(userSlice.isAuthenticated),
     isLoading: Boolean(userSlice.loading),
     hasUser: Boolean(userSlice.user),
   }
