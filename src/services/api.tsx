@@ -14,6 +14,7 @@ interface UrlItem {
   originalUrl: string
   shortUrl: string
   shortCode: string
+  clickCount:number
   createdAt: string
 }
 
@@ -120,6 +121,7 @@ const api = {
       originalUrl: string
       shortUrl: string
       shortCode: string
+      clickCount:number
     }>
   > => {
     try {
@@ -128,6 +130,7 @@ const api = {
           originalUrl: string
           shortUrl: string
           shortCode: string
+          clickCount:number
         }>
       >("/url/shorten", {
         originalUrl,

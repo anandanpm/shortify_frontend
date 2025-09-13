@@ -30,6 +30,7 @@ export interface UrlData {
 
 
 export interface UrlItem {
+  clickCount: number
   id: string
   originalUrl: string
   shortUrl: string
