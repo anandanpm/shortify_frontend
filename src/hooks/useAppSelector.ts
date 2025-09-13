@@ -1,15 +1,11 @@
-
 import { useSelector, type TypedUseSelectorHook } from "react-redux"
 import { createSelector } from "@reduxjs/toolkit"
 import type { RootState } from "../redux/store"
 
-
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
-
 
 const selectUserState = createSelector([(state: RootState) => state.user], (userSlice) => {
   console.log("Selector - Raw user slice:", userSlice)
-
 
   if (!userSlice) {
     return {
@@ -17,6 +13,7 @@ const selectUserState = createSelector([(state: RootState) => state.user], (user
       isAuthenticated: false,
       loading: false,
       error: null,
+      isInitialized: false,
     }
   }
 
@@ -25,14 +22,18 @@ const selectUserState = createSelector([(state: RootState) => state.user], (user
     isAuthenticated: Boolean(userSlice.isAuthenticated),
     loading: Boolean(userSlice.loading),
     error: userSlice.error || null,
+    isInitialized: Boolean(userSlice.isInitialized), // ✅ Added missing isInitialized
   }
 
   console.log("Selector - Processed result:", result)
   return result
 })
 
-const selectUrlsState = createSelector([(state: RootState) => state.urls], (urlsSlice) => {
-  if (!urlsSlice) {
+// ✅ Fixed: Using state.urls (plural) as confirmed by TypeScript error
+const selectUrlsState = createSelector([(state: RootState) => state.urls], (urlSlice) => {
+  console.log("Selector - Raw urls slice:", urlSlice)
+  
+  if (!urlSlice) {
     return {
       urls: [],
       loading: false,
@@ -42,13 +43,16 @@ const selectUrlsState = createSelector([(state: RootState) => state.urls], (urls
     }
   }
 
-  return {
-    urls: Array.isArray(urlsSlice.urls) ? urlsSlice.urls : [],
-    loading: Boolean(urlsSlice.loading),
-    error: urlsSlice.error || null,
-    totalUrls: Number(urlsSlice.totalUrls) || 0,
-    shorteningInProgress: Boolean(urlsSlice.shorteningInProgress),
+  const result = {
+    urls: Array.isArray(urlSlice.urls) ? urlSlice.urls : [],
+    loading: Boolean(urlSlice.loading),
+    error: urlSlice.error || null,
+    totalUrls: Number(urlSlice.totalUrls) || 0,
+    shorteningInProgress: Boolean(urlSlice.shorteningInProgress),
   }
+
+  console.log("Selector - Processed urls result:", result)
+  return result
 })
 
 const selectAuthStatus = createSelector([(state: RootState) => state.user], (userSlice) => {
@@ -57,6 +61,7 @@ const selectAuthStatus = createSelector([(state: RootState) => state.user], (use
       isAuthenticated: false,
       isLoading: false,
       hasUser: false,
+      isInitialized: false,
     }
   }
 
@@ -64,21 +69,38 @@ const selectAuthStatus = createSelector([(state: RootState) => state.user], (use
     isAuthenticated: Boolean(userSlice.isAuthenticated),
     isLoading: Boolean(userSlice.loading),
     hasUser: Boolean(userSlice.user),
+    isInitialized: Boolean(userSlice.isInitialized), // ✅ Added isInitialized here too
   }
 })
 
 // Custom hooks using memoized selectors
 export const useUserState = () => {
   const state = useAppSelector(selectUserState)
-  console.log("useUserState hook returning:", state)
+  console.log("useUserState hook returning:", {
+    user: state.user,
+    isAuthenticated: state.isAuthenticated,
+    loading: state.loading,
+    error: state.error,
+    isInitialized: state.isInitialized,
+  })
   return state
 }
 
 export const useUrlsState = () => {
-  return useAppSelector(selectUrlsState)
+  const state = useAppSelector(selectUrlsState)
+  console.log("useUrlsState hook returning:", {
+    urls: state.urls?.length || 0,
+    loading: state.loading,
+    error: state.error,
+    totalUrls: state.totalUrls,
+    shorteningInProgress: state.shorteningInProgress,
+  })
+  return state
 }
 
 // Hook to check authentication status
 export const useAuthStatus = () => {
-  return useAppSelector(selectAuthStatus)
+  const state = useAppSelector(selectAuthStatus)
+  console.log("useAuthStatus hook returning:", state)
+  return state
 }
