@@ -43,12 +43,30 @@ const selectUrlsState = createSelector([(state: RootState) => state.urls], (urlS
     }
   }
 
+  // ✅ Fix: Handle serialized state from redux-persist
+  let parsedUrlSlice = urlSlice
+  if (typeof urlSlice === 'string') {
+    try {
+      parsedUrlSlice = JSON.parse(urlSlice)
+      console.log("Parsed serialized urls slice:", parsedUrlSlice)
+    } catch (error) {
+      console.error("Failed to parse urls slice:", error)
+      return {
+        urls: [],
+        loading: false,
+        error: null,
+        totalUrls: 0,
+        shorteningInProgress: false,
+      }
+    }
+  }
+
   const result = {
-    urls: Array.isArray(urlSlice.urls) ? urlSlice.urls : [],
-    loading: Boolean(urlSlice.loading),
-    error: urlSlice.error || null,
-    totalUrls: Number(urlSlice.totalUrls) || 0,
-    shorteningInProgress: Boolean(urlSlice.shorteningInProgress),
+    urls: Array.isArray(parsedUrlSlice.urls) ? parsedUrlSlice.urls : [],
+    loading: Boolean(parsedUrlSlice.loading),
+    error: parsedUrlSlice.error || null,
+    totalUrls: Number(parsedUrlSlice.totalUrls) || 0,
+    shorteningInProgress: Boolean(parsedUrlSlice.shorteningInProgress),
   }
 
   console.log("Selector - Processed urls result:", result)
