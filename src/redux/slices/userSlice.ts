@@ -70,13 +70,9 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload
-    },
-
+    // ✅ Remove manual setLoading - let async thunks handle it
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload
-      state.loading = false
       console.log("Error set in state:", action.payload)
     },
 
@@ -118,17 +114,18 @@ const userSlice = createSlice({
       .addCase(registerUser.pending, (state) => {
         state.loading = true
         state.error = null
+        console.log("Register pending - loading started")
       })
       .addCase(registerUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.user = action.payload
         state.isAuthenticated = true
-        state.loading = false
+        state.loading = false // ✅ Make sure to set loading to false
         state.error = null
         state.isInitialized = true
         console.log("Register fulfilled - user registered and logged in:", action.payload)
       })
       .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false
+        state.loading = false // ✅ Make sure to set loading to false
         state.error = action.payload as string
         state.isAuthenticated = false
         state.user = null
@@ -141,17 +138,18 @@ const userSlice = createSlice({
       .addCase(loginUser.pending, (state) => {
         state.loading = true
         state.error = null
+        console.log("Login pending - loading started")
       })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.user = action.payload
         state.isAuthenticated = true
-        state.loading = false
+        state.loading = false // ✅ Make sure to set loading to false
         state.error = null
         state.isInitialized = true
         console.log("Login fulfilled - user logged in:", action.payload)
       })
       .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false
+        state.loading = false // ✅ Make sure to set loading to false
         state.error = action.payload as string
         state.isAuthenticated = false
         state.user = null
@@ -164,20 +162,24 @@ const userSlice = createSlice({
       .addCase(logoutUser.pending, (state) => {
         state.loading = true
         state.error = null
+        console.log("Logout pending - loading started")
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null
         state.isAuthenticated = false
-        state.loading = false
+        state.loading = false // ✅ Make sure to set loading to false
         state.error = null
         state.isInitialized = true
+        console.log("Logout fulfilled")
       })
       .addCase(logoutUser.rejected, (state, action) => {
-        state.loading = false
+        state.loading = false // ✅ Make sure to set loading to false
         state.error = action.payload as string
+        // ✅ Even if logout fails, clear user state for security
         state.user = null
         state.isAuthenticated = false
         state.isInitialized = true
+        console.log("Logout rejected with error:", action.payload)
       })
 
     // Refresh token
@@ -185,26 +187,28 @@ const userSlice = createSlice({
       .addCase(refreshUserToken.pending, (state) => {
         state.loading = true
         state.error = null
+        console.log("Refresh token pending - loading started")
       })
       .addCase(refreshUserToken.fulfilled, (state, action: PayloadAction<User>) => {
         state.user = action.payload
         state.isAuthenticated = true
-        state.loading = false
+        state.loading = false // ✅ Make sure to set loading to false
         state.error = null
         state.isInitialized = true
+        console.log("Refresh token fulfilled")
       })
       .addCase(refreshUserToken.rejected, (state, action) => {
-        state.loading = false
+        state.loading = false // ✅ Make sure to set loading to false
         state.error = action.payload as string
         state.isAuthenticated = false
         state.user = null
         state.isInitialized = true
+        console.log("Refresh token rejected with error:", action.payload)
       })
   },
 })
 
 export const {
-  setLoading,
   setError,
   clearError,
   loginSuccess,
